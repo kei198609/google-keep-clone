@@ -1,0 +1,15 @@
+import api from '../../lib/api';
+import { User } from '../users/user.entity';
+
+// apiにリクエストを送り処理。postリクエストをauth/signupのURLに送る処理。
+export const authRepository = {
+    async signup(
+        name: string,
+        email: string,
+        password: string
+    ): Promise<{ user: User; token: string }> {
+        const result = await api.post('/auth/signup', { name, email, password });
+        const { user, token } = result.data; //リクエストが成功すると結果がresultのdataに入ってくるので、dataに含まれるuserとtokenを変数に代入
+        return { user: new User(user), token };
+    },
+};
