@@ -13,7 +13,7 @@ export default function FlashMessage() {
         <div className='flash-message__icon'>
           {flashMessage.type === 'error' ? <FiXCircle /> : <FiCheckCircle />}
         </div>
-        <div className='flash-message__content'>メモを作成しました</div>
+        <div className='flash-message__content'>{flashMessage.message}</div>
         <button className='flash-message__close' onClick={removeFlashMessage}>
           <FiX />
         </button>
