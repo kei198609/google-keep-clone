@@ -1,7 +1,41 @@
 import { Link } from 'react-router-dom';
 import './Signup.css';
+import { useState } from 'react';
+import { authRepository } from '../../modules/auth/auth.repository';
+import { useUIStore } from '../../modules/ui/ui.store';
 
 export default function Signup() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const { addFlashMessage } = useUIStore();
+  const [isLoading, setIsLoading] = useState(false); //ユーザ登録処理の最中にボタン連打された場合、apiに連続してリクエストをされたら良くないので、リクエストを送っている最中はボタンを押せないようにする。
+
+  const signup = async () => {
+    // サインアップ失敗時のバリデーション
+    if (!name || !email || !password) {
+      addFlashMessage('すべての項目を入力してください', 'error');
+      return; //処理を抜ける。この先の処理を走らせないようにするため。
+    }
+    if(password.length < 8) {
+      addFlashMessage('パスワードは８文字以上で入力してください', 'error');
+      return; //処理を抜ける。
+    }
+
+    // api呼び出しエラーの際、エラーハンドリングのためtry,catchの中に入れている
+    setIsLoading(true); //apiを叩く処理が始まった時、trueにする
+    try {
+      const result = await authRepository.signup(name, email, password); //auth.repository.tsで書いたsignupメソッド
+      console.log(result);
+      addFlashMessage('アカウントを作成しました', 'success'); //フラッシュメッセージがsuccessの見た目で表示される
+    } catch (error) {
+      console.error(error);
+      addFlashMessage('アカウント作成に失敗しました', 'error'); //失敗時にユーザに伝えるため
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className='signup-page'>
       <div className='signup-container'>
@@ -30,8 +64,8 @@ export default function Signup() {
                 type='text'
                 className='form-input'
                 placeholder='山田太郎'
-                value=''
-                onChange={() => {}}
+                value={name}
+                onChange={(e) => setName(e.target.value)} //入力値が変更された時に都度呼ばれるメソッド.eに変更された値が入ってくるのでsetNameでnameステートに同期してあげている。
               />
             </div>
 
@@ -44,8 +78,8 @@ export default function Signup() {
                 type='email'
                 className='form-input'
                 placeholder='example@example.com'
-                value=''
-                onChange={() => {}}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
 
@@ -58,15 +92,16 @@ export default function Signup() {
                 type='password'
                 className='form-input'
                 placeholder='8文字以上'
-                value=''
-                onChange={() => {}}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
 
             <button
               type='button'
               className='btn btn-primary signup-submit-btn'
-              onClick={() => {}}
+              onClick={signup} //11行目で定義した
+              disabled={isLoading} //isLoadingがtrueの時は、disabledがtrueになってボタンが無効になる
             >
               アカウント作成
             </button>
