@@ -1,7 +1,35 @@
 import { Link } from 'react-router-dom';
 import './Login.css';
+import { useState } from 'react';
+import { useUIStore } from '../../modules/ui/ui.store';
+import { authRepository } from '../../modules/auth/auth.repository';
 
 export default function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { addFlashMessage } = useUIStore();
+
+  const login = async () => {
+    if(!email || !password) {
+      addFlashMessage('メールアドレスとパスワードを入力してください', 'error');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const result = await authRepository.signin(email, password);
+      console.log(result);
+      addFlashMessage('ログインしました', 'success');
+    } catch (error) {
+      console.error(error)
+      addFlashMessage('ログインに失敗しました', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className='login-page'>
       <div className='login-container'>
@@ -30,8 +58,8 @@ export default function Login() {
                 type='email'
                 className='form-input'
                 placeholder='example@example.com'
-                value=''
-                onChange={() => {}}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
 
@@ -44,15 +72,16 @@ export default function Login() {
                 type='password'
                 className='form-input'
                 placeholder='パスワードを入力'
-                value=''
-                onChange={() => {}}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
 
             <button
               type='button'
               className='btn btn-primary login-submit-btn'
-              onClick={() => {}}
+              onClick={login}
+              disabled={isLoading}
             >
               ログイン
             </button>
