@@ -1,14 +1,17 @@
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import './Login.css';
 import { useState } from 'react';
 import { useUIStore } from '../../modules/ui/ui.store';
 import { authRepository } from '../../modules/auth/auth.repository';
+import { userCurrentUserStore } from '../../modules/auth/current-user.store';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { addFlashMessage } = useUIStore();
+  const { currentUser, setCurrentUser } = userCurrentUserStore(); //値(currentUser)とセットする関数(setCurrentUser)を取り出している
+
 
   const login = async () => {
     if(!email || !password) {
@@ -19,8 +22,8 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const result = await authRepository.signin(email, password);
-      console.log(result);
+      const { user, token } = await authRepository.signin(email, password);
+      setCurrentUser(user); //ログインした際にグローバルストアにログインしたユーザの情報がセットされるようになる
       addFlashMessage('ログインしました', 'success');
     } catch (error) {
       console.error(error)
@@ -29,6 +32,8 @@ export default function Login() {
       setIsLoading(false);
     }
   };
+
+  if (currentUser) return <Navigate to="/" />; //既にログインしているユーザは、ログイン画面を表示する必要がないので、currentUserがある場合はホーム画面にリダイレクト
 
   return (
     <div className='login-page'>
