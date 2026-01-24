@@ -1,8 +1,9 @@
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import './Signup.css';
 import { useState } from 'react';
 import { authRepository } from '../../modules/auth/auth.repository';
 import { useUIStore } from '../../modules/ui/ui.store';
+import { userCurrentUserStore } from '../../modules/auth/current-user.store';
 
 export default function Signup() {
   const [name, setName] = useState('');
@@ -10,6 +11,7 @@ export default function Signup() {
   const [password, setPassword] = useState('');
   const { addFlashMessage } = useUIStore();
   const [isLoading, setIsLoading] = useState(false); //ユーザ登録処理の最中にボタン連打された場合、apiに連続してリクエストをされたら良くないので、リクエストを送っている最中はボタンを押せないようにする。
+  const { currentUser, setCurrentUser } = userCurrentUserStore();
 
   const signup = async () => {
     // サインアップ失敗時のバリデーション
@@ -25,8 +27,13 @@ export default function Signup() {
     // api呼び出しエラーの際、エラーハンドリングのためtry,catchの中に入れている
     setIsLoading(true); //apiを叩く処理が始まった時、trueにする
     try {
-      const result = await authRepository.signup(name, email, password); //auth.repository.tsで書いたsignupメソッド
-      console.log(result);
+      const { user, token } = await authRepository.signup(
+        name,
+        email,
+        password
+      ); //auth.repository.tsで書いたsignupメソッド
+      localStorage.setItem('token', token); //アクセストークンがローカルストレージに保存
+      setCurrentUser(user);
       addFlashMessage('アカウントを作成しました', 'success'); //フラッシュメッセージがsuccessの見た目で表示される
     } catch (error) {
       console.error(error);
@@ -35,6 +42,8 @@ export default function Signup() {
       setIsLoading(false);
     }
   };
+
+  if (currentUser) return <Navigate to="/" />; //ユーザ登録画面もcurrentUserがある場合はホーム画面にリダイレクト
 
   return (
     <div className='signup-page'>
