@@ -3,8 +3,13 @@ import SearchBar from './SearchBar';
 import LabelSidebar from './LabelSidebar';
 import NoteCard from './NoteCard';
 import './Home.css';
+import { userCurrentUserStore } from '../../modules/auth/current-user.store';
+import { Navigate } from 'react-router-dom';
 
 export default function Home() {
+  const { currentUser } = userCurrentUserStore();
+  if (!currentUser) return <Navigate to="/login" />; //ログインしていないとこのhome画面を見れないようにする。ログインしていないとlogin画面にリダイレクトさせる。
+
   return (
     <div className='home'>
       <header className='home-header'>
