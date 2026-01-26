@@ -23,6 +23,7 @@ export default function Login() {
 
     try {
       const { user, token } = await authRepository.signin(email, password);
+      localStorage.setItem('token', token); //アクセストークンがローカルストレージに保存
       setCurrentUser(user); //ログインした際にグローバルストアにログインしたユーザの情報がセットされるようになる
       addFlashMessage('ログインしました', 'success');
     } catch (error) {
