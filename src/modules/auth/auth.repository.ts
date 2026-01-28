@@ -20,4 +20,10 @@ export const authRepository = {
         const { user, token } = result.data;
         return { user: new User(user), token };
     },
+
+    async getCurrentUser(): Promise<User | null> {
+        const result = await api.get('/auth/me'); //auth/meとすることで現在ログインしているユーザを取得できる
+        if(!result.data) return null; //result.dataに値が帰ってこない場合は明示的にnullを返すようにしてあげる
+        return new User(result.data); //値が帰ってきている場合は、result.dataをUserエンティティに渡してあげて、Userエンティティのインスタンスとして返す
+    },
 };
