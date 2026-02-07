@@ -6,6 +6,7 @@ interface LabelStore {
     labels: Label[];
     addLabel: (label: Label) => void;
     setLabels: (labels: Label[]) => void; // 引数：Label[] 戻り値：void（何も返さない）Label の配列を受け取って、状態を更新する関数が存在する」と約束しているだけです。
+    removeLabel: (id: string) => void;
 }
 
 export const useLabelStore = create<LabelStore>((set, get) => ({
@@ -15,6 +16,9 @@ export const useLabelStore = create<LabelStore>((set, get) => ({
     },
     setLabels: (labels: Label[]) => {
         set({ labels }); //ストアの labels を、引数で受け取った labels に丸ごと置き換える
+    },
+    removeLabel: (id: string) => { //idに１が渡ってきたとしたら、
+        set({ labels: get().labels.filter((label) => label.id !== id) }); //ストアに入っているlabelsの情報をまわして、idが１と一致しないラベルのデータを取り出して、setに渡してストアにセットしなおす。
     },
 }));
 
