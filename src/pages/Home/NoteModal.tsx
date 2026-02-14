@@ -1,12 +1,35 @@
 import { FiX, FiImage, FiTag, FiCheck } from 'react-icons/fi';
+import type { SaveNoteParams } from '../../modules/notes/note.repository';
+import { useLabelStore } from '../../modules/labels/label.store';
+import { useState } from 'react';
 
-export default function NoteModal() {
+
+interface NoteModalProps {
+  onClose: () => void;
+  onSubmit: (params: SaveNoteParams) => Promise<void>;
+}
+
+export default function NoteModal( { onClose, onSubmit } : NoteModalProps) {
+  const { labels } = useLabelStore();
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>([]);
+
+  //既に入っているものであればステートから取り除く処理
+  const toggleLabel = (labelId: string) => { //クリックされたlabelIdを引数にとる
+    if (selectedLabelIds.includes(labelId)) {  //もし選択されているラベルIDの一覧に、クリックされたラベルのIDが入っている場合
+      setSelectedLabelIds((prev) => prev.filter((id) => id !== labelId)); //引数て渡ってきているlabelIdと一致しないものを取り出してステートにセットしなおしている
+    } else {
+      setSelectedLabelIds((prev) => [...prev, labelId]); //既存ステートの末にクリックされたラベルのidを追加する処理
+    }
+  };
+
   return (
-    <div className='note-modal-overlay' onClick={() => {}}>
+    <div className='note-modal-overlay' onClick={onClose}>
       <div className='note-modal' onClick={(e) => e.stopPropagation()}>
         <div className='note-modal__header'>
           <h2 className='note-modal__title'>メモを入力</h2>
-          <button className='icon-btn note-modal__close-btn' onClick={() => {}}>
+          <button className='icon-btn note-modal__close-btn' onClick={onClose}>
             <FiX />
           </button>
         </div>
@@ -17,8 +40,8 @@ export default function NoteModal() {
               type='text'
               className='form-input note-modal__title-input'
               placeholder='タイトル'
-              value=''
-              onChange={() => {}}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
             />
           </div>
 
@@ -27,8 +50,8 @@ export default function NoteModal() {
               className='form-textarea note-modal__content-textarea'
               placeholder='メモを入力...'
               rows={8}
-              value=''
-              onChange={() => {}}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
             ></textarea>
           </div>
 
@@ -38,50 +61,21 @@ export default function NoteModal() {
               ラベル
             </label>
             <div className='note-modal__labels'>
+              {labels.map((label) => (
               <button
-                className='note-modal__label-tag'
+              key={label.id}
+                className={`note-modal__label-tag ${selectedLabelIds.includes(label.id) ? 'note-modal__label-tag--selected' : ''}`}
                 style={{
-                  backgroundColor: 'transparent',
-                  color: '#2196f3',
-                  border: '2px solid #2196f3',
+                  backgroundColor: selectedLabelIds.includes(label.id) ? label.color : 'transparent', //transparentは透明の意味
+                  color: selectedLabelIds.includes(label.id) ? 'white' : label.color,
+                  border: `2px solid ${label.color}`,
                 }}
-                onClick={() => {}}
+                onClick={() => toggleLabel(label.id)}
               >
-                仕事
+                {selectedLabelIds.includes(label.id) && <FiCheck className="note-modal__label-check" />}
+                {label.name}
               </button>
-              <button
-                className='note-modal__label-tag'
-                style={{
-                  backgroundColor: 'transparent',
-                  color: '#4caf50',
-                  border: '2px solid #4caf50',
-                }}
-                onClick={() => {}}
-              >
-                重要
-              </button>
-              <button
-                className='note-modal__label-tag'
-                style={{
-                  backgroundColor: 'transparent',
-                  color: '#f44336',
-                  border: '2px solid #f44336',
-                }}
-                onClick={() => {}}
-              >
-                緊急
-              </button>
-              <button
-                className='note-modal__label-tag'
-                style={{
-                  backgroundColor: 'transparent',
-                  color: '#ffc107',
-                  border: '2px solid #ffc107',
-                }}
-                onClick={() => {}}
-              >
-                個人
-              </button>
+              ))}
             </div>
           </div>
 
@@ -125,13 +119,13 @@ export default function NoteModal() {
         <div className='note-modal__footer'>
           <button
             className='btn btn-secondary'
-            onClick={() => {}}
+            onClick={onClose}
           >
             キャンセル
           </button>
           <button
             className='btn btn-primary'
-            onClick={() => {}}
+            onClick={() => onSubmit({ title, content, labelIds: selectedLabelIds })}
           >
             保存
           </button>
