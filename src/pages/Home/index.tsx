@@ -100,7 +100,7 @@ export default function Home() {
           </div> */}
         </main>
       </div>
-      {isModalOpen && <NoteModal />}
+      {isModalOpen && <NoteModal onClose={closeModal} onSubmit={createNote} />}
     </div>
   );
 }
