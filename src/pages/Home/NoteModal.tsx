@@ -2,6 +2,7 @@ import { FiX, FiImage, FiTag, FiCheck } from 'react-icons/fi';
 import type { SaveNoteParams } from '../../modules/notes/note.repository';
 import { useLabelStore } from '../../modules/labels/label.store';
 import { useState } from 'react';
+import { useUIStore } from '../../modules/ui/ui.store';
 
 
 interface NoteModalProps {
@@ -14,6 +15,9 @@ export default function NoteModal( { onClose, onSubmit } : NoteModalProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>([]);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null); //プレビュー用の画像を管理するステート。型はstringで初期値はnull
+  const [imageFile, setImageFile] = useState<File | null>(null); //イメージファイル自体を保持するステート。型はFileで初期値はnull
+  const { addFlashMessage } = useUIStore();
 
   //既に入っているものであればステートから取り除く処理
   const toggleLabel = (labelId: string) => { //クリックされたlabelIdを引数にとる
@@ -22,6 +26,30 @@ export default function NoteModal( { onClose, onSubmit } : NoteModalProps) {
     } else {
       setSelectedLabelIds((prev) => [...prev, labelId]); //既存ステートの末にクリックされたラベルのidを追加する処理
     }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTyps = ['images/jpeg', 'image/png'];
+    if (!allowedTyps.includes(file.type)){
+      addFlashMessage('画像ファイルはJPEG、PNGのみ対応しています', 'error');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024){
+      addFlashMessage('ファイルサイズは5MB以下にしてください', 'error');
+      return;
+    }
+
+   //ファイルを読み取ってプレビュー用のURLを生成
+    const reader = new FileReader(); //FileReaderはブラウザのAPIになっていてパソコン内のファイルを読み取ることができる
+    reader.onloadend = () => { //onloadendでファイルの読み取りを完了した際の処理を設定できる
+      setPreviewUrl(reader.result as string); //onloadendが呼ばれて、ファイルの読み取りが完了した際にはそのファイルのURLが入っているので、reader.resultをsetPreviewUrlに渡している
+      setImageFile(file); //ファイル自体をセット
+    };
+    reader.readAsDataURL(file); //readAsDataURLはメソッド
   };
 
   return (
@@ -85,33 +113,32 @@ export default function NoteModal( { onClose, onSubmit } : NoteModalProps) {
               画像（1枚まで）
             </label>
             <div className='note-modal__images'>
-              {/* 画像プレビュー表示バージョン - コメントアウトを切り替えて使用 */}
-              {/* <div className='note-modal__image-preview'>
-                <img
-                  src='https://picsum.photos/400/300'
-                  alt='プレビュー'
-                  className='note-modal__image'
-                />
-                <button
-                  className='note-modal__image-remove'
-                  onClick={() => {}}
-                >
-                  <FiX />
-                </button>
-              </div> */}
-
-              {/* 画像アップロードボタン表示バージョン */}
-              <label className='note-modal__upload-btn'>
-                <FiImage />
-                <span>画像をアップロード</span>
-                <input
-                  type='file'
-                  accept='image/jpeg,image/png,image/gif'
-                  onChange={() => {}}
-                  style={{ display: 'none' }}
-                  disabled
-                />
-              </label>
+              {previewUrl ? (
+                <div className='note-modal__image-preview'>
+                  <img
+                    src={previewUrl}
+                    alt='プレビュー'
+                    className='note-modal__image'
+                  />
+                  <button
+                    className='note-modal__image-remove'
+                    onClick={() => {}}
+                  >
+                    <FiX />
+                  </button>
+                </div>
+              ) : (
+                <label className='note-modal__upload-btn'>
+                  <FiImage />
+                  <span>画像をアップロード</span>
+                  <input
+                    type='file'
+                    accept='image/jpeg,image/png,image/gif'
+                    onChange={ handleFileChange }
+                    style={{ display: 'none' }}
+                  />
+                </label>
+              )}
             </div>
           </div>
         </div>
