@@ -52,6 +52,12 @@ export default function NoteModal( { onClose, onSubmit } : NoteModalProps) {
     reader.readAsDataURL(file); //readAsDataURLはメソッド
   };
 
+  //バツボタンクリックでプレビューを削除して、ファイルの選択状態もリセット
+  const handleRemovePreview = () => {
+    setPreviewUrl(null);
+    setImageFile(null);
+  };
+
   return (
     <div className='note-modal-overlay' onClick={onClose}>
       <div className='note-modal' onClick={(e) => e.stopPropagation()}>
@@ -122,7 +128,7 @@ export default function NoteModal( { onClose, onSubmit } : NoteModalProps) {
                   />
                   <button
                     className='note-modal__image-remove'
-                    onClick={() => {}}
+                    onClick={handleRemovePreview}
                   >
                     <FiX />
                   </button>
@@ -152,7 +158,13 @@ export default function NoteModal( { onClose, onSubmit } : NoteModalProps) {
           </button>
           <button
             className='btn btn-primary'
-            onClick={() => onSubmit({ title, content, labelIds: selectedLabelIds })}
+            onClick={() => onSubmit({
+              title,
+              content,
+              labelIds: selectedLabelIds,
+              imageFile: imageFile || undefined, //ステートに入っているimageFileファイルをapi側に渡す処理もしくはundefinedを渡す処理
+            })
+            }
           >
             保存
           </button>
