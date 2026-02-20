@@ -9,6 +9,16 @@ export interface SaveNoteParams {
     imageFile?: File; //紐づける画像
 }
 
+export interface NotesResponse {
+    notes: Note[];
+    pagination: {
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    };
+}
+
 export const noteRepository = {
     async createNote(params: SaveNoteParams): Promise<Note> {
         const formDate = new FormData(); //JSON ({}) ではファイルを送れない。テキスト＋画像 → FormData が必要
@@ -24,5 +34,13 @@ export const noteRepository = {
             },
         });
         return new Note(result.data); //リクエストが成功したら、result.dataに作成したNoteの内容が入っているので、Noteエンティティのインスタンスにして返す
+    },
+    //メモの一覧をバックエンドから取ってくる関数
+    async getNotes(): Promise<NotesResponse> { //返り値の型を指定
+        const result = await api.get('/notes'); //メモの一覧とページネーション関連のデータも返ってくる
+        return { //awaitから帰ってきた情報をreturn
+            notes: result.data.notes.map((note: Note) => new Note(note)), //mapを使ってひとつづつ取り出して、new Note(note)で全てnoteエンティティのインスタンスに変換してreturnしている
+            pagination: result.data.pagination,
+        };
     },
 };
