@@ -5,7 +5,7 @@ import NoteCard from './NoteCard';
 import './Home.css';
 import { userCurrentUserStore } from '../../modules/auth/current-user.store';
 import { Navigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import NoteModal from './NoteModal';
 import { useUIStore } from '../../modules/ui/ui.store';
 import { noteRepository, type SaveNoteParams } from '../../modules/notes/note.repository';
@@ -15,7 +15,27 @@ export default function Home() {
   const { currentUser } = userCurrentUserStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { addFlashMessage } = useUIStore();
-  const { addNote } = useNoteStore();
+  const { addNote, notes, setNotes, isLoading, setIsLoading } = useNoteStore();
+
+  //コンポーネント表示時に一回だけ呼び出したいのでuseEffectの中で呼び出す
+  useEffect(() => {
+    fetchNotes();
+  }, []);
+
+  const fetchNotes = async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
+    try {
+      const response = await noteRepository.getNotes();
+      setNotes(response.notes); //ストアに入れる処理
+    } catch (error) {
+      console.error(error);
+      addFlashMessage('メモの取得に失敗しました', 'error');
+    } finally {
+      setIsLoading(false); //falseにしてローディング状態を解除
+    }
+  };
 
   const createNote = async (params: SaveNoteParams) => {
     try {
@@ -80,10 +100,9 @@ export default function Home() {
 
           {/* メモ一覧 - NoteCardコンポーネントを使用 */}
           <div className='notes-grid'>
-            <NoteCard />
-            <NoteCard />
-            <NoteCard />
-            <NoteCard />
+            {notes.map((note) => ( //
+              <NoteCard key={note.id} note={note}/> //noteにmapの引数になっているnoteを渡すことでnotesに入っているメモの数だけmapが回って、NoteCardにそれぞれのメモの情報が渡されて表示されるようになる
+            ))}
           </div>
 
           {/* <div className='loading' style={{ textAlign: 'center', padding: '20px' }}>
