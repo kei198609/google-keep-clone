@@ -43,4 +43,20 @@ export const noteRepository = {
             pagination: result.data.pagination,
         };
     },
+    // メモの更新用のapiを叩くメソッド
+    async updateNote(id: string, params: SaveNoteParams): Promise<Note> { //アップデートするメモのidを引数に渡す、
+        const formDate = new FormData(); //JSON ({}) ではファイルを送れない。テキスト＋画像 → FormData が必要
+        if (params.title) formDate.append('title', params.title); //title が存在するときだけ、FormData に追加する
+        if (params.content) formDate.append('content', params.content); //content が存在するときだけ、FormData に追加する
+        if (params.labelIds && params.labelIds.length > 0) //labelIds が存在していて、かつ中身が1つ以上あるときだけ true
+            formDate.append('labelIds', JSON.stringify(params.labelIds)); //labelIds があれば JSON文字列にしてFormData に追加する
+        if (params.imageFile) formDate.append('image', params.imageFile); //imageFile があれば画像としてFormData に追加する
+
+        const result = await api.put(`/notes/${id}`, formDate,{ //putリクエストは更新の時に使われるリクエスト
+            headers: {
+                'Content-Type': 'multipart/form-data', //Content-Typeを上書きして、multipart/form-dataを使ってリクエストすることができるようになる
+            },
+        });
+        return new Note(result.data); //リクエストが成功したら、result.dataに作成したNoteの内容が入っているので、Noteエンティティのインスタンスにして返す
+    },
 };
