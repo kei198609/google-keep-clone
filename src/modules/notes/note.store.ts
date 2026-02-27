@@ -8,6 +8,7 @@ interface NoteStore {
     addNote: (note: Note) => void;
     setNotes: (notes: Note[]) => void;
     setIsLoading:(isLoading: boolean) => void;
+    removeLabelFromNotes: (labelId: string) => void; //ラベルを削除したときストアからも削除させるため紐づける処理
 }
 
 export const useNoteStore = create<NoteStore>((set) => ({ //create<NoteStore>は「このストアは NoteStore の形を満たします」と型で保証
@@ -21,5 +22,15 @@ export const useNoteStore = create<NoteStore>((set) => ({ //create<NoteStore>は
     },
     setIsLoading: (isLoading: boolean) => {
         set({ isLoading });
+    },
+    removeLabelFromNotes: (labelId: string) => {
+        set((state) => ({
+            notes: state.notes.map((note) => ({ //notesの値をmapで回して一つ一つ取り出してあげます。
+                ...note, //labels以外のプロパティは変えないので、引数に渡ってきたnoteを展開してそのまま入れてあげている
+                //ラベルのみ再度取り出して、filterで全て回してあげて、引数に渡されている削除対象のlabelId以外のものをlabelsに入れ直した上で、
+                //その情報をnotesの中に再度入れて上書きしている。削除対象のラベルがあれば、それを消してステートの中に新しく入れ直している
+                labels: note.labels?.filter((label) => label.id !== labelId) || [],
+            })),
+        }));
     },
 }));
