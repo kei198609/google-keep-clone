@@ -17,7 +17,7 @@ export default function NoteCard({ note }: NoteCardProps) { // プロップス�
           />
         </div>
       )}
-      <h3 className='note-card__title'>{note.title}</h3>
+      <h3 className='note-card__title'>{note.title || '無題のメモ'}</h3>
       <p className='note-card__content'>{note.content}</p>
       <div className='note-card__labels'>
         {note.labels.map((label) => (
