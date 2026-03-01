@@ -9,6 +9,7 @@ interface NoteStore {
     setNotes: (notes: Note[]) => void;
     setIsLoading:(isLoading: boolean) => void;
     removeLabelFromNotes: (labelId: string) => void; //ラベルを削除したときストアからも削除させるため紐づける処理
+    replaceNote: (id: string, newValue: Note) => void;
 }
 
 export const useNoteStore = create<NoteStore>((set) => ({ //create<NoteStore>は「このストアは NoteStore の形を満たします」と型で保証
@@ -31,6 +32,13 @@ export const useNoteStore = create<NoteStore>((set) => ({ //create<NoteStore>は
                 //その情報をnotesの中に再度入れて上書きしている。削除対象のラベルがあれば、それを消してステートの中に新しく入れ直している
                 labels: note.labels?.filter((label) => label.id !== labelId) || [],
             })),
+        }));
+    },
+    // 既存のstate.notesの中身がmapで一つ一つまわって、引数に渡ってきたidと一致するもの（更新対象）のnoteがあれば引数にnewValueを入れる。
+    // それ以外（更新対象外）はそのまま入れてあげて、mapで配列を作り直してnotesストアの中にセットしなおしているという実装。
+    replaceNote(id: string, newValue: Note) {
+        set((state) => ({
+            notes: state.notes.map((note) => (note.id === id ? newValue : note)),
         }));
     },
 }));
