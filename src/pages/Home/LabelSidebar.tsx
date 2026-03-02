@@ -4,11 +4,13 @@ import LabelModal from '../../components/LabelModal';
 import { useUIStore } from '../../modules/ui/ui.store';
 import { labelRepository } from '../../modules/labels/label.repository';
 import { useLabelStore } from '../../modules/labels/label.store';
+import { useNoteStore } from '../../modules/notes/note.store';
 
 export default function LabelSidebar() {
   const [isModalOpen, setIsModalOpen] = useState(false); //モーダルを表示するかしないかのステートを作る
   const { addFlashMessage } = useUIStore();
   const { addLabel, setLabels, labels, removeLabel } = useLabelStore();
+  const { removeLabelFromNotes } = useNoteStore();
 
   // fetchLabelsをコンポーネントが最初にレンダリングされたタイミングで実行したいので
   useEffect(() => {
@@ -42,6 +44,7 @@ export default function LabelSidebar() {
     try {
       await labelRepository.deleteLabel(labelId); //削除処理をapiを叩いて呼び出してあげている
       removeLabel(labelId); //削除処理が無事終わったら、ストアからもラベルの情報を削除
+      removeLabelFromNotes(labelId);
       addFlashMessage('ラベルを削除しました', 'success');
     } catch (error) {
       console.error(error);
