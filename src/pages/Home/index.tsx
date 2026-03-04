@@ -10,13 +10,16 @@ import NoteModal from './NoteModal';
 import { useUIStore } from '../../modules/ui/ui.store';
 import { noteRepository, type SaveNoteParams } from '../../modules/notes/note.repository';
 import { useNoteStore } from '../../modules/notes/note.store';
+import type { Note } from '../../modules/notes/note.entity';
+
+
 
 export default function Home() {
   const { currentUser } = userCurrentUserStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { addFlashMessage } = useUIStore();
   const { addNote, notes, setNotes, isLoading, setIsLoading } = useNoteStore();
-
+  const [editingNote, setEditingNote] = useState<Note | null>(null); //型はNoteまたはnull。初期値はnull。
   //コンポーネント表示時に一回だけ呼び出したいのでuseEffectの中で呼び出す
   useEffect(() => {
     fetchNotes();
@@ -49,8 +52,16 @@ export default function Home() {
     }
   };
 
+  //カードがクリックされた時の処理を作る。クリックされたカードに紐づているメモの情報をステートに入れてあげて、その情報をモーダル内に表示させる
+  const handleCardClick = (note: Note) => { //クリックされたNoteのデータを引数にとる
+    setEditingNote(note); //上の処理でクリックされたNoteのデータをsetEditingNoteステートに入れる処理
+    setIsModalOpen(true); //モーダルをオープンにする処理
+  }
+
+
   // モーダルを閉じる処理
   const closeModal = () => {
+    setEditingNote(null); //リセット処理
     setIsModalOpen(false);
   };
 
@@ -101,7 +112,7 @@ export default function Home() {
           {/* メモ一覧 - NoteCardコンポーネントを使用 */}
           <div className='notes-grid'>
             {notes.map((note) => ( //
-              <NoteCard key={note.id} note={note}/> //noteにmapの引数になっているnoteを渡すことでnotesに入っているメモの数だけmapが回って、NoteCardにそれぞれのメモの情報が渡されて表示されるようになる
+              <NoteCard key={note.id} note={note} onEdit={handleCardClick}/> //noteにmapの引数になっているnoteを渡すことでnotesに入っているメモの数だけmapが回って、NoteCardにそれぞれのメモの情報が渡されて表示されるようになる
             ))}
           </div>
 
@@ -119,7 +130,13 @@ export default function Home() {
           </div> */}
         </main>
       </div>
-      {isModalOpen && <NoteModal onClose={closeModal} onSubmit={createNote} />}
+      {isModalOpen && (
+        <NoteModal
+          onClose={closeModal}
+          onSubmit={createNote}
+          note={editingNote || undefined}
+        />
+      )}
     </div>
   );
 }
