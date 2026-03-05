@@ -3,19 +3,26 @@ import type { SaveNoteParams } from '../../modules/notes/note.repository';
 import { useLabelStore } from '../../modules/labels/label.store';
 import { useState } from 'react';
 import { useUIStore } from '../../modules/ui/ui.store';
+import { Note } from '../../modules/notes/note.entity';
 
 
 interface NoteModalProps {
   onClose: () => void;
   onSubmit: (params: SaveNoteParams) => Promise<void>;
+  note?: Note; //note?はNoteが渡ってきていない時というのは新規作成のメモを作成する時には、Noteは渡ってきてこないので、?をつけてあげて、Noteを渡しても渡さなくてもどちらでも良いという形のプロップスにしている。
 }
 
-export default function NoteModal( { onClose, onSubmit } : NoteModalProps) {
+export default function NoteModal( { onClose, onSubmit, note } : NoteModalProps) {
   const { labels } = useLabelStore();
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>([]);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null); //プレビュー用の画像を管理するステート。型はstringで初期値はnull
+  const [title, setTitle] = useState(note?.title || ''); //noteがあれば、そのtitleがステートの初期値になる。noteがなければ空文字が入って初期値になる。新規作成時にモーダルを開いた際は初期値が入っていない見た目にできる。
+  const [content, setContent] = useState(note?.content || '');
+  const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>(
+    note?.labels.map((label) => label.id) || [] //noteがあれば、そのlabelsをmapで回して、idを取り出したlabelのidの配列を設定。noteがなければ、空の配列を設定。
+  );
+  //プレビュー用の画像を管理するステート。型はstringで初期値はnull
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    note?.imageUrl || null //noteのimageUrlがあればそれを使うし、なければnullを入れる。
+  );
   const [imageFile, setImageFile] = useState<File | null>(null); //イメージファイル自体を保持するステート。型はFileで初期値はnull
   const { addFlashMessage } = useUIStore();
 
