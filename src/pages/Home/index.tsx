@@ -18,7 +18,7 @@ export default function Home() {
   const { currentUser } = userCurrentUserStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { addFlashMessage } = useUIStore();
-  const { addNote, notes, setNotes, isLoading, setIsLoading } = useNoteStore();
+  const { addNote, notes, setNotes, isLoading, setIsLoading, replaceNote } = useNoteStore();
   const [editingNote, setEditingNote] = useState<Note | null>(null); //型はNoteまたはnull。初期値はnull。
   //コンポーネント表示時に一回だけ呼び出したいのでuseEffectの中で呼び出す
   useEffect(() => {
@@ -63,6 +63,26 @@ export default function Home() {
   const closeModal = () => {
     setEditingNote(null); //リセット処理
     setIsModalOpen(false);
+  };
+
+  //　メモ編集
+  const updateNote = async (params: SaveNoteParams) => {
+    if(!editingNote) return; //editingNoteがない場合はアップデートできないようにしたいのでリターンにする。
+    try {
+      //editingNoteのidと一致するメモの情報がparamsに入力された内容でアップデートされて、
+      //apiのリクエストが成功するとアップデートされたメモの情報がupdatedNoteに入る。
+      const updatedNote = await noteRepository.updateNote(
+        editingNote.id,
+        params
+      );
+      replaceNote(editingNote.id, updatedNote); //replaceNoteを使ってストアの中身も更新する
+      addFlashMessage('メモを更新しました', 'success');
+      setEditingNote(null);
+      setIsModalOpen(false); //モーダルの状態をリセット
+    } catch (error) {
+      console.error(error);
+      addFlashMessage('メモの更新に失敗しました', 'error');
+    }
   };
 
   if (!currentUser) return <Navigate to="/login" />; //ログインしていないとこのhome画面を見れないようにする。ログインしていないとlogin画面にリダイレクトさせる。
@@ -133,7 +153,7 @@ export default function Home() {
       {isModalOpen && (
         <NoteModal
           onClose={closeModal}
-          onSubmit={createNote}
+          onSubmit={editingNote ? updateNote : createNote} //editingNoteがない時は新規の作成になるのでcreateNote、ある時はモーダルはアップデートにつかわれるのでupdateNote
           note={editingNote || undefined}
         />
       )}
