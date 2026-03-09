@@ -59,4 +59,7 @@ export const noteRepository = {
         });
         return new Note(result.data); //リクエストが成功したら、result.dataに作成したNoteの内容が入っているので、Noteエンティティのインスタンスにして返す
     },
+    async deleteNote(id: string) :Promise<void> {
+        await api.delete(`/notes/${id}`); //削除するapiになるので、削除したものはデータ自体もなくなるのでapiから値が返ってこないのでreturnするものはなし。
+    },
 };
