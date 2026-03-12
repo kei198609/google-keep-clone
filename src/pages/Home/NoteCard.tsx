@@ -4,9 +4,14 @@ import type { Note } from '../../modules/notes/note.entity';
 interface NoteCardProps {
   note: Note;
   onEdit: (note: Note) => void;
+  onDelete: (id: string) => void;
 }
 
-export default function NoteCard({ note, onEdit }: NoteCardProps) { // プロップスから受け取ってノートカードコンポーネントの中に伝えるようにする
+export default function NoteCard({ note, onEdit, onDelete }: NoteCardProps) { // プロップスから受け取ってノートカードコンポーネントの中に伝えるようにする
+  const handleDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation(); //stopPropagationを呼ぶことで、ゴミ箱ボタンだけを押された処理だけを読んで、その後のイベントの処理を行える。ゴミ箱ボタンはノートカードに重なっているので、ノードカードをクリックした処理も一緒に走るのを防ぐ役割。
+    onDelete(note.id);
+  };
   return (
     <div className='note-card' onClick={() => onEdit(note)}>
       { note.imageUrl && ( //imageUrlがある場合のみ、note-card__image-containerを表示
@@ -37,7 +42,7 @@ export default function NoteCard({ note, onEdit }: NoteCardProps) { // プロッ
           <button className='icon-btn note-card__action-btn'>
             <FiEdit2 />
           </button>
-          <button className='icon-btn note-card__action-btn' onClick={() => {}}>
+          <button className='icon-btn note-card__action-btn' onClick={handleDelete}>
             <FiTrash2 />
           </button>
         </div>
