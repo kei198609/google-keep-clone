@@ -18,7 +18,7 @@ export default function Home() {
   const { currentUser } = userCurrentUserStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { addFlashMessage } = useUIStore();
-  const { addNote, notes, setNotes, isLoading, setIsLoading, replaceNote } = useNoteStore();
+  const { addNote, notes, setNotes, isLoading, setIsLoading, replaceNote, removeNote } = useNoteStore();
   const [editingNote, setEditingNote] = useState<Note | null>(null); //型はNoteまたはnull。初期値はnull。
   //コンポーネント表示時に一回だけ呼び出したいのでuseEffectの中で呼び出す
   useEffect(() => {
@@ -85,6 +85,19 @@ export default function Home() {
     }
   };
 
+  const deleteNote = async (id: string) => { //削除するメモのidが渡ってくる
+    if(!window.confirm('このメモを削除しますか？')) return; //確認が画面に表示される。はいを押すとwindow.confirmはtrueを返す。いいえを押すとfalseを返す。
+    //以下trueとなった場合の処理
+    try {
+      await noteRepository.deleteNote(id);
+      removeNote(id);
+      addFlashMessage('メモを削除しました', 'success');
+    } catch (error) {
+      console.error(error);
+      addFlashMessage('メモの削除に失敗しました', 'error');
+    }
+  };
+
   if (!currentUser) return <Navigate to="/login" />; //ログインしていないとこのhome画面を見れないようにする。ログインしていないとlogin画面にリダイレクトさせる。
 
   return (
@@ -132,7 +145,12 @@ export default function Home() {
           {/* メモ一覧 - NoteCardコンポーネントを使用 */}
           <div className='notes-grid'>
             {notes.map((note) => ( //
-              <NoteCard key={note.id} note={note} onEdit={handleCardClick}/> //noteにmapの引数になっているnoteを渡すことでnotesに入っているメモの数だけmapが回って、NoteCardにそれぞれのメモの情報が渡されて表示されるようになる
+              <NoteCard
+              key={note.id}
+              note={note}
+              onEdit={handleCardClick}
+              onDelete={deleteNote}
+              /> //noteにmapの引数になっているnoteを渡すことでnotesに入っているメモの数だけmapが回って、NoteCardにそれぞれのメモの情報が渡されて表示されるようになる
             ))}
           </div>
 
