@@ -5,17 +5,25 @@ import type { Note } from "./note.entity";
 interface NoteStore {
     notes: Note[]; //メモ一覧を格納する処理。Noteはnote.entity.tsで定義したやつ。
     isLoading: boolean;
+    page: number; //ページネーション関連。今何ページ目のデータを表示しているのかをステートで管理したいので追加
+    hasMore: boolean; //ページネーション関連。最後のページなのかを示すものになる。hasMoreがtrueの場合、まだ次のページがあるよというところを示す。falseになると最後のページを表示しているということで、これ以上ページはとれないことを表す。
     addNote: (note: Note) => void;
     setNotes: (notes: Note[]) => void;
     setIsLoading:(isLoading: boolean) => void;
     removeLabelFromNotes: (labelId: string) => void; //ラベルを削除したときストアからも削除させるため紐づける処理
     replaceNote: (id: string, newValue: Note) => void;
-    removeNote:(id: string) => void; //指定したidのメモの情報をstoreから削除する
+    removeNote: (id: string) => void; //指定したidのメモの情報をstoreから削除する
+    addNotes: (notes: Note[]) => void; //ページネーション関連。末尾に追加してあげるかつ配列でまとめて追加してあげるものを実装していくようなイメージ。ページネーション関連。
+    resetNotes: () => void; //ページネーション関連。NoteStoreの値を全てリセットするようなメソッド
+    setPage: (page: number) => void; //ページネーション関連。pageをセットするメソッド。引数に取った値を新しくNoteStoreに入れてあげる内容
+    setHasMore: (hasMore: boolean) => void; //ページネーション関連。hasMoreをセットするメソッド。引数に取った値を新しくNoteStoreに入れてあげる内容
 }
 
 export const useNoteStore = create<NoteStore>((set) => ({ //create<NoteStore>は「このストアは NoteStore の形を満たします」と型で保証
     notes: [], //初期値を返すオブジェクト、アプリ起動時、ストアが作られた瞬間の初期値
     isLoading: false,
+    page: 1,
+    hasMore: true,
     addNote: (note: Note) => {
         set((state) => ({ notes: [note, ...state.notes] })); //setに渡されていくる関数の引数stateには、情報が入っているのでこれを...state.notesで末尾に展開してあげて、その先頭に新しいnoteを入れてあげると、引数に渡ってきた新しいNoteがステートの中の先頭に追加される。
     },
@@ -54,6 +62,18 @@ export const useNoteStore = create<NoteStore>((set) => ({ //create<NoteStore>は
             // filterで削除対象(id)と一致しないメモだけ残し、新しい配列を作ってstoreを更新する
             notes: state.notes.filter((note) => note.id !== id), //!==は一致しないものを残す。一致しなければtrueが返る。filter はtrue のものだけ残すメソッド
         }));
+    },
+    addNotes: (notes: Note[]) => {
+        set((state) => ({ notes: [...state.notes, ...notes] })); //引数notesの取ったNoteの配列を末尾に追加する実装
+    },
+    resetNotes: () => {
+        set( {notes: [], page: 1, hasMore: true}); //これは元のデフォルト値に戻す感じの実装。notesは空の配列,pageは１、hasMoreはtrue
+    },
+    setPage: (page: number) => {
+        set({ page }); //引数pageで取った値を直接。
+    },
+    setHasMore: (hasMore: boolean) => {
+        set({ hasMore }); //引数hasMoreで取った値を直接。
     },
 }));
 
