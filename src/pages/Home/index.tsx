@@ -18,20 +18,48 @@ export default function Home() {
   const { currentUser } = userCurrentUserStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { addFlashMessage } = useUIStore();
-  const { addNote, notes, setNotes, isLoading, setIsLoading, replaceNote, removeNote } = useNoteStore();
+  const {
+    addNote,
+    notes,
+    setNotes,
+    isLoading,
+    setIsLoading,
+    replaceNote,
+    removeNote,
+    addNotes,
+    resetNotes,
+    page,
+    hasMore,
+    setPage,
+    setHasMore,
+  } = useNoteStore();
+  const limit = 12;
   const [editingNote, setEditingNote] = useState<Note | null>(null); //型はNoteまたはnull。初期値はnull。
   //コンポーネント表示時に一回だけ呼び出したいのでuseEffectの中で呼び出す
   useEffect(() => {
     fetchNotes();
+    // コンポーネントがアンマウント（画面遷移など）されるときに、
+    // ノートの状態を初期化して次回表示時にデータがリセットされた状態にする。resetしないと起きる問題は、前のメモが残ってるので、重複表示や途中ページから始まる挙動バグが起きる
+    return () => {
+      resetNotes();
+    };
   }, []);
-
+  //ページが１、２ページ目だろうが、fetchNotesを呼び出すことで、取得できるようにしている。
+  //isLoadingがtrueの時だけでなく、hasMoreがfalseの時（次のページが無い時）取得する必要がないので、returnを返すようにする。
   const fetchNotes = async () => {
-    if (isLoading) return;
-
+    if (isLoading || !hasMore) return;
     setIsLoading(true);
     try {
-      const response = await noteRepository.getNotes();
-      setNotes(response.notes); //ストアに入れる処理
+      const response = await noteRepository.getNotes(page, limit);
+      if (page === 1) {
+        setNotes(response.notes); //setNotesを使ってストアに入れる処理
+      } else {
+        addNotes(response.notes); //2ページ目を取得した際、setNotesはもともと入っていた1ページ目の既存のステートの値を上書きしてしまう。1ページ目以外はaddNotesを使う。
+      }
+      setPage(page + 1);
+      //response.paginationは例えばバックエンドから{ page: 1, totalPages: 3}というデータが返ってきます。
+      // 1 < 3 → trueとなります。つまりまだ先のページがあるので → hasMore = trueとなります。次ページあるか判定していて、trueならhasMore更新して、hasMore=falseならもうfetchしないということ。
+      setHasMore(response.pagination.page < response.pagination.totalPages);
     } catch (error) {
       console.error(error);
       addFlashMessage('メモの取得に失敗しました', 'error');
