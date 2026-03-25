@@ -5,7 +5,7 @@ import NoteCard from './NoteCard';
 import './Home.css';
 import { userCurrentUserStore } from '../../modules/auth/current-user.store';
 import { Navigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import NoteModal from './NoteModal';
 import { useUIStore } from '../../modules/ui/ui.store';
 import { noteRepository, type SaveNoteParams } from '../../modules/notes/note.repository';
@@ -35,6 +35,7 @@ export default function Home() {
   } = useNoteStore();
   const limit = 12;
   const [editingNote, setEditingNote] = useState<Note | null>(null); //型はNoteまたはnull。初期値はnull。
+  const loadMoreRef = useRef<HTMLDivElement | null>(null); //無限スクロール関連。監視要素とそのrefを作成。
   //コンポーネント表示時に一回だけ呼び出したいのでuseEffectの中で呼び出す
   useEffect(() => {
     fetchNotes();
@@ -125,6 +126,28 @@ export default function Home() {
       addFlashMessage('メモの削除に失敗しました', 'error');
     }
   };
+  //無限スクロール関連
+  //entriesに監視対象の要素が入っていて
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      const target = entries[0]; //要素は一つしかないので0番目を取得することで、divがtargetの中に入っているわけなんですけども
+      if (target.isIntersecting && hasMore && !isLoading) { //target.isIntersectingはtargetは表示された時にtrueになる。かつhasMoreがtrueかつisLoadingがfalse（ロードしていない状態）であれば、
+        fetchNotes(); //fetchNotesを読んで次のページを表示してあげる。
+      }
+    });
+
+    if (loadMoreRef.current) { //loadMoreRefのcurrentが存在する場合、
+      observer.observe(loadMoreRef.current); //observeという関数にloadMoreRefのcurrentを渡すことでloadMoreRefに渡されているdivを監視し始めることができる
+    }
+    // useEffectのクリーンアップ処理
+    // コンポーネントの再描画 or アンマウント時に監視を解除する
+    // （解除しないとobserverが重複して、fetchが複数回呼ばれるバグになる）
+    return () => {
+      if (observer) {
+        observer.disconnect();
+      }
+    };
+  }, [hasMore, isLoading]);
 
   if (!currentUser) return <Navigate to="/login" />; //ログインしていないとこのhome画面を見れないようにする。ログインしていないとlogin画面にリダイレクトさせる。
 
@@ -181,14 +204,20 @@ export default function Home() {
               /> //noteにmapの引数になっているnoteを渡すことでnotesに入っているメモの数だけmapが回って、NoteCardにそれぞれのメモの情報が渡されて表示されるようになる
             ))}
           </div>
+          <div ref = {loadMoreRef} style = {{ height: '20px'}} />
 
-          {/* <div className='loading' style={{ textAlign: 'center', padding: '20px' }}>
-            読み込み中...
-          </div> */}
+          {isLoading && (
+            <div className='loading' style={{ textAlign: 'center', padding: '20px' }}>
+              読み込み中...
+            </div>
+          )}
+          {/* 最後のページを表示した時の機能。hasMoreがfalseかつnotesのlengthが0以上だったときに表示させる */}
+          {!hasMore && notes.length > 0 && (
+            <div className='no-more' style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+              全てのメモを表示しました
+            </div>
+          )}
 
-          {/* <div className='no-more' style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
-            全てのメモを表示しました
-          </div> */}
 
           {/* <div className='no-notes'>
             <p>メモがありません</p>
