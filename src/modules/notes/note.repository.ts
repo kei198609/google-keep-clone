@@ -36,8 +36,8 @@ export const noteRepository = {
         return new Note(result.data); //リクエストが成功したら、result.dataに作成したNoteの内容が入っているので、Noteエンティティのインスタンスにして返す
     },
     //メモの一覧をバックエンドから取ってくる関数
-    async getNotes(page: number = 1, limit: number = 12): Promise<NotesResponse> { //返り値の型を指定。pageとlimitは引数。値は初期値。ページネーションのやつで何ページ目の情報を取得したいかというところと取得したいページの情報の件数を指定
-        const result = await api.get('/notes', { params: { page, limit } }); //メモの一覧とページネーション関連のデータも返ってくる
+    async getNotes(page: number = 1, limit: number = 12, query?: string): Promise<NotesResponse> { //返り値の型を指定。pageとlimitは引数。値は初期値。ページネーションのやつで何ページ目の情報を取得したいかというところと取得したいページの情報の件数を指定
+        const result = await api.get('/notes', { params: { page, limit, q: query } }); //メモの一覧とページネーション関連のデータも返ってくる。qはqというキーでqueryの値を投げれるようにしている。
         return { //awaitから帰ってきた情報をreturn
             notes: result.data.notes.map((note: Note) => new Note(note)), //mapを使ってひとつづつ取り出して、new Note(note)で全てnoteエンティティのインスタンスに変換してreturnしている
             pagination: result.data.pagination,
