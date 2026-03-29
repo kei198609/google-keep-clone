@@ -7,6 +7,7 @@ interface NoteStore {
     isLoading: boolean;
     page: number; //ページネーション関連。今何ページ目のデータを表示しているのかをステートで管理したいので追加
     hasMore: boolean; //ページネーション関連。最後のページなのかを示すものになる。hasMoreがtrueの場合、まだ次のページがあるよというところを示す。falseになると最後のページを表示しているということで、これ以上ページはとれないことを表す。
+    searchQuery: string;//インプットに入力されて検索ワードを保持するところをNoteStoreに作ってあげる
     addNote: (note: Note) => void;
     setNotes: (notes: Note[]) => void;
     setIsLoading:(isLoading: boolean) => void;
@@ -17,6 +18,7 @@ interface NoteStore {
     resetNotes: () => void; //ページネーション関連。NoteStoreの値を全てリセットするようなメソッド
     setPage: (page: number) => void; //ページネーション関連。pageをセットするメソッド。引数に取った値を新しくNoteStoreに入れてあげる内容
     setHasMore: (hasMore: boolean) => void; //ページネーション関連。hasMoreをセットするメソッド。引数に取った値を新しくNoteStoreに入れてあげる内容
+    setSearchQuery: (query: string) => void;
 }
 
 export const useNoteStore = create<NoteStore>((set) => ({ //create<NoteStore>は「このストアは NoteStore の形を満たします」と型で保証
@@ -24,6 +26,7 @@ export const useNoteStore = create<NoteStore>((set) => ({ //create<NoteStore>は
     isLoading: false,
     page: 1,
     hasMore: true,
+    searchQuery: '', //初期値はからの文字列
     addNote: (note: Note) => {
         set((state) => ({ notes: [note, ...state.notes] })); //setに渡されていくる関数の引数stateには、情報が入っているのでこれを...state.notesで末尾に展開してあげて、その先頭に新しいnoteを入れてあげると、引数に渡ってきた新しいNoteがステートの中の先頭に追加される。
     },
@@ -74,6 +77,9 @@ export const useNoteStore = create<NoteStore>((set) => ({ //create<NoteStore>は
     },
     setHasMore: (hasMore: boolean) => {
         set({ hasMore }); //引数hasMoreで取った値を直接。
+    },
+    setSearchQuery: (searchQuery: string) => {
+        set({ searchQuery }); //引数searchQueryで取った値を直接。
     },
 }));
 
