@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FiSearch } from 'react-icons/fi';
 
 interface SearchBarProps {
@@ -8,6 +8,12 @@ interface SearchBarProps {
 export default function SearchBar({ onSearch }: SearchBarProps) { //PropsからonSearchを使えるように取り出している
   //inputがonChangeで変わった時に入力されている値を同期するステートを用意
   const [inputValue, setInputValue] = useState('');
+
+  //inputValueが変わったタイミングでonSearchが呼ばれて、inputに入っている値が渡される
+  useEffect(() => {
+    onSearch(inputValue);
+  }, [inputValue]);
+
   return (
     <div className="search-bar">
       <div className="search-bar__icon">
