@@ -32,6 +32,8 @@ export default function Home() {
     hasMore,
     setPage,
     setHasMore,
+    searchQuery,
+    setSearchQuery,
   } = useNoteStore();
   const limit = 12;
   const [editingNote, setEditingNote] = useState<Note | null>(null); //型はNoteまたはnull。初期値はnull。
@@ -44,14 +46,14 @@ export default function Home() {
     return () => {
       resetNotes();
     };
-  }, []);
+  }, [searchQuery]);
   //ページが１、２ページ目だろうが、fetchNotesを呼び出すことで、取得できるようにしている。
   //isLoadingがtrueの時だけでなく、hasMoreがfalseの時（次のページが無い時）取得する必要がないので、returnを返すようにする。
   const fetchNotes = async () => {
     if (isLoading || !hasMore) return;
     setIsLoading(true);
     try {
-      const response = await noteRepository.getNotes(page, limit);
+      const response = await noteRepository.getNotes(page, limit, searchQuery);
       if (page === 1) {
         setNotes(response.notes); //setNotesを使ってストアに入れる処理
       } else {
@@ -126,6 +128,11 @@ export default function Home() {
       addFlashMessage('メモの削除に失敗しました', 'error');
     }
   };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+  };
+
   //無限スクロール関連
   //entriesに監視対象の要素が入っていて
   useEffect(() => {
@@ -165,7 +172,7 @@ export default function Home() {
             </svg>
             <span className='home-header__logo-text'>Google Keep Clone</span>
           </div>
-          <SearchBar />
+          <SearchBar onSearch={handleSearch}/>
         </div>
         <div className='home-header__right'>
           <span className='home-header__user'>テストユーザー</span>
