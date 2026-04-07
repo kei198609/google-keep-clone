@@ -15,7 +15,7 @@ import type { Note } from '../../modules/notes/note.entity';
 
 
 export default function Home() {
-  const { currentUser } = userCurrentUserStore();
+  const { currentUser, setCurrentUser } = userCurrentUserStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { addFlashMessage } = useUIStore();
   const {
@@ -156,6 +156,12 @@ export default function Home() {
     };
   }, [hasMore, isLoading]);
 
+  const logout = () => {
+    localStorage.removeItem('token');
+    setCurrentUser(null);
+    addFlashMessage('ログアウトしました', 'success');
+  };
+
   if (!currentUser) return <Navigate to="/login" />; //ログインしていないとこのhome画面を見れないようにする。ログインしていないとlogin画面にリダイレクトさせる。
 
   return (
@@ -175,10 +181,10 @@ export default function Home() {
           <SearchBar onSearch={handleSearch}/>
         </div>
         <div className='home-header__right'>
-          <span className='home-header__user'>テストユーザー</span>
+          <span className='home-header__user'>{currentUser.name}</span>
           <button
             className='icon-btn home-header__logout-btn'
-            onClick={() => {}}
+            onClick={logout}
           >
             <FiLogOut />
           </button>
