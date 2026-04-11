@@ -5,14 +5,14 @@ import NoteCard from './NoteCard';
 import './Home.css';
 import { userCurrentUserStore } from '../../modules/auth/current-user.store';
 import { Navigate } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import NoteModal from './NoteModal';
 import { useUIStore } from '../../modules/ui/ui.store';
 import { noteRepository, type SaveNoteParams } from '../../modules/notes/note.repository';
 import { useNoteStore } from '../../modules/notes/note.store';
 import type { Note } from '../../modules/notes/note.entity';
 
-
+type SortKey = 'newest' | 'oldest' | 'title';
 
 export default function Home() {
   const { currentUser, setCurrentUser } = userCurrentUserStore();
@@ -164,6 +164,24 @@ export default function Home() {
 
   if (!currentUser) return <Navigate to="/login" />; //ログインしていないとこのhome画面を見れないようにする。ログインしていないとlogin画面にリダイレクトさせる。
 
+
+  const [sortKey, setSortKey] = useState<SortKey>('newest');
+  const sortedNotes = useMemo(() => {
+    const copy = [...notes]; // 破壊的変更を避ける
+
+    switch (sortKey) {
+      case 'newest':
+        return copy.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      case 'oldest':
+        return copy.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+      case 'title':
+        return copy.sort((a, b) => (a.title || '').localeCompare(b.title || '', 'ja'));
+      default:
+        return copy;
+    }
+  }, [notes, sortKey]);
+
+
   return (
     <div className='home'>
       <header className='home-header'>
@@ -197,18 +215,33 @@ export default function Home() {
         <main className='home-content'>
           <div className='home-content__header'>
             <h2 className='home-content__title'>すべてのメモ</h2>
-            <button
-              className='btn btn-primary home-content__add-btn'
-              onClick={() => setIsModalOpen(true)}
-            >
-              <FiPlus />
-              <span>新しいメモ</span>
-            </button>
+
+            {/* ソート機能 */}
+            <div className='home-content__actions'>
+              <select
+                value={sortKey}
+                onChange={(e) => setSortKey(e.target.value as SortKey)}
+                className='home-content__sort'
+              >
+                <option value="newest">新しい順</option>
+                <option value="oldest">古い順</option>
+                <option value="title">タイトル順</option>
+              </select>
+
+              <button
+                className='btn btn-primary home-content__add-btn'
+                onClick={() => setIsModalOpen(true)}
+              >
+                <FiPlus />
+                <span>新しいメモ</span>
+              </button>
+            </div>
+
           </div>
 
           {/* メモ一覧 - NoteCardコンポーネントを使用 */}
           <div className='notes-grid'>
-            {notes.map((note) => ( //
+            {sortedNotes.map((note) => ( //
               <NoteCard
               key={note.id}
               note={note}
