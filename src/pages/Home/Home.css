@@ -221,6 +221,25 @@
   gap: 8px;
 }
 
+/* ソートボタン */
+.home-content__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.home-content__sort {
+  min-width: 160px;
+  padding: 0 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: #fff;
+  color: var(--text-primary);
+  font-size: 16px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
 /* メモグリッド */
 .notes-grid {
   display: grid;
