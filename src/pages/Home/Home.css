@@ -240,6 +240,24 @@
   box-sizing: border-box;
 }
 
+/* 切り替えボタン */
+.home-content__view-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-content__view-btn {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+}
+
+.home-content__view-btn.is-active {
+  background-color: var(--hover-bg);
+  border: 1px solid var(--border-color);
+}
+
 /* メモグリッド */
 .notes-grid {
   display: grid;
