@@ -13,6 +13,9 @@ import { useNoteStore } from '../../modules/notes/note.store';
 import type { Note } from '../../modules/notes/note.entity';
 
 type SortKey = 'newest' | 'oldest' | 'title';
+// 表示切り替えの state
+type ViewMode = 'grid' | 'list';
+
 
 export default function Home() {
   const { currentUser, setCurrentUser } = userCurrentUserStore();
@@ -182,6 +185,9 @@ export default function Home() {
   }, [notes, sortKey]);
 
 
+  // 表示切り替えの state
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+
   return (
     <div className='home'>
       <header className='home-header'>
@@ -215,9 +221,32 @@ export default function Home() {
         <main className='home-content'>
           <div className='home-content__header'>
             <h2 className='home-content__title'>すべてのメモ</h2>
-
-            {/* ソート機能 */}
             <div className='home-content__actions'>
+
+              <div className='home-content__view-toggle'>
+                {/* 表示切り替え */}
+                <button
+                type='button'
+                className={viewMode === 'grid'
+                  ? 'btn btn-secondary home-content__view-btn is-active'
+                  : 'btn btn-secondary home-content__view-btn'}
+                onClick={() => setViewMode('grid')}
+                >
+                  グリッド
+                </button>
+
+                <button
+                  type='button'
+                  className={viewMode === 'list'
+                  ? 'btn btn-secondary home-content__view-btn is-active'
+                  : 'btn btn-secondary home-content__view-btn'}
+                  onClick={() => setViewMode('list')}
+                  >
+                    リスト
+                </button>
+              </div>
+
+              {/* ソート機能 */}
               <select
                 value={sortKey}
                 onChange={(e) => setSortKey(e.target.value as SortKey)}
@@ -240,13 +269,14 @@ export default function Home() {
           </div>
 
           {/* メモ一覧 - NoteCardコンポーネントを使用 */}
-          <div className='notes-grid'>
+          <div className={viewMode === 'grid' ? 'notes-grid' : 'notes-list'}>
             {sortedNotes.map((note) => ( //
               <NoteCard
               key={note.id}
               note={note}
               onEdit={handleCardClick}
               onDelete={deleteNote}
+              viewMode={viewMode}
               /> //noteにmapの引数になっているnoteを渡すことでnotesに入っているメモの数だけmapが回って、NoteCardにそれぞれのメモの情報が渡されて表示されるようになる
             ))}
           </div>
