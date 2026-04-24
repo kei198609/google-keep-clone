@@ -407,6 +407,25 @@
   height: 32px;
   font-size: 14px;
 }
+/* リストスタイル */
+.notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.note-card--list {
+  width: 100%;
+  min-height: auto;
+  padding: 16px 16px;
+}
+
+.note-card--list .note-card__content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 
 /* メモモーダル */
 .note-modal-overlay {
