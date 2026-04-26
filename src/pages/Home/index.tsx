@@ -268,18 +268,38 @@ export default function Home() {
 
           </div>
 
-          {/* メモ一覧 - NoteCardコンポーネントを使用 */}
-          <div className={viewMode === 'grid' ? 'notes-grid' : 'notes-list'}>
-            {sortedNotes.map((note) => ( //
-              <NoteCard
-              key={note.id}
-              note={note}
-              onEdit={handleCardClick}
-              onDelete={deleteNote}
-              viewMode={viewMode}
-              /> //noteにmapの引数になっているnoteを渡すことでnotesに入っているメモの数だけmapが回って、NoteCardにそれぞれのメモの情報が渡されて表示されるようになる
-            ))}
-          </div>
+
+          {!isLoading && sortedNotes.length === 0 ? (
+            <div className='empty-state'>
+              {searchQuery ? (
+                <>
+                  <p className='empty-state__title'>検索結果がありません</p>
+                  <p className='empty-state__text'>キーワードを変えてお試しください</p>
+                </>
+              ) : (
+                <>
+                  <p className='empty-state__title'>メモがありません</p>
+                  <p className='empty-state__text'>新しいメモを作成してみましょう</p>
+                </>
+              )}
+            </div>
+
+          ) : (
+
+            <div className={viewMode === 'grid' ? 'notes-grid' : 'notes-list'}>
+              {sortedNotes.map((note) => (
+                <NoteCard
+                key={note.id}
+                note={note}
+                onEdit={handleCardClick}
+                onDelete={deleteNote}
+                viewMode={viewMode}
+                /> //noteにmapの引数になっているnoteを渡すことでnotesに入っているメモの数だけmapが回って、NoteCardにそれぞれのメモの情報が渡されて表示されるようになる
+              ))}
+            </div>
+
+          )}
+
           <div ref = {loadMoreRef} style = {{ height: '20px'}} />
 
           {isLoading && (
