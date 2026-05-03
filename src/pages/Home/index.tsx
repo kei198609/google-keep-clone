@@ -15,6 +15,7 @@ import type { Note } from '../../modules/notes/note.entity';
 type SortKey = 'newest' | 'oldest' | 'title';
 // 表示切り替えの state
 type ViewMode = 'grid' | 'list';
+type ThemeMode = 'light' | 'dark';
 
 
 export default function Home() {
@@ -188,6 +189,23 @@ export default function Home() {
   // 表示切り替えの state
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
+  //ダークモード
+  const [theme, setTheme] = useState<ThemeMode>('light');
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') as ThemeMode | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+    }
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+
+
   return (
     <div className='home'>
       <header className='home-header'>
@@ -206,6 +224,14 @@ export default function Home() {
         </div>
         <div className='home-header__right'>
           <span className='home-header__user'>{currentUser.name}</span>
+          <button
+            type='button'
+            className='btn btn-secondary home-header__theme-btn'
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+          >
+            {theme === 'light' ? 'ダーク' : 'ライト'}
+          </button>
+
           <button
             className='icon-btn home-header__logout-btn'
             onClick={logout}
