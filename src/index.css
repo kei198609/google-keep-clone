@@ -9,6 +9,7 @@
   /* カラーパレット */
   --primary-color: #ffc107;
   --primary-dark: #ffa000;
+  --on-primary-color: #202124;
   --background-color: #fff;
   --surface-color: #fff;
   --border-color: #e0e0e0;
@@ -34,6 +35,7 @@
 [data-theme='dark'] {
   --primary-color: #ffca28;
   --primary-dark: #ffb300;
+  --on-primary-color: #202124;
   --background-color: #202124;
   --surface-color: #2d2e30;
   --border-color: #5f6368;
