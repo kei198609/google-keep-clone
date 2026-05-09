@@ -204,6 +204,19 @@ export default function Home() {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
+  //モーダル表示中は背景スクロールをさせない
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden'; //モーダルが開いている時に body のスクロールを止める処理
+    } else {
+      document.body.style.overflow = '';
+    }
+    //モーダルが閉じた時にスクロール制御を元に戻す処理
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isModalOpen]);
+
 
 
   return (
