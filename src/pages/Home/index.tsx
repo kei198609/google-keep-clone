@@ -42,6 +42,8 @@ export default function Home() {
   const limit = 12;
   const [editingNote, setEditingNote] = useState<Note | null>(null); //型はNoteまたはnull。初期値はnull。
   const loadMoreRef = useRef<HTMLDivElement | null>(null); //無限スクロール関連。監視要素とそのrefを作成。
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null); //画像プレビュー用state
+
   //コンポーネント表示時に一回だけ呼び出したいのでuseEffectの中で呼び出す
   useEffect(() => {
     fetchNotes();
@@ -333,6 +335,7 @@ export default function Home() {
                 onEdit={handleCardClick}
                 onDelete={deleteNote}
                 viewMode={viewMode}
+                onPreviewImage={setPreviewImageUrl}
                 /> //noteにmapの引数になっているnoteを渡すことでnotesに入っているメモの数だけmapが回って、NoteCardにそれぞれのメモの情報が渡されて表示されるようになる
               ))}
             </div>
@@ -366,6 +369,32 @@ export default function Home() {
           onSubmit={editingNote ? updateNote : createNote} //editingNoteがない時は新規の作成になるのでcreateNote、ある時はモーダルはアップデートにつかわれるのでupdateNote
           note={editingNote || undefined}
         />
+      )}
+      {previewImageUrl && (
+        <div
+          className='image-preview-overlay'
+          onClick={() => setPreviewImageUrl(null)} //背景をクリックするとsetPreviewImageUrl(null)が実行される。previewImageUrl が null になり、プレビューモーダルが閉じます。
+        >
+          <div
+            className='image-preview-modal'
+            onClick={(e) => e.stopPropagation()} //クリックイベントが外側まで伝わるのを止めています。
+          >
+            <button
+              type='button'
+              className='image-preview-close'
+              onClick={() => setPreviewImageUrl(null)} //クリックすると、setPreviewImageUrl(null)が実行されます。つまり、画像プレビューを閉じます。
+            >
+              ×
+            </button>
+
+            <img
+              src={previewImageUrl} //ここで実際に画像を表示しています。
+              alt="拡大プレビュー"
+              className='image-preview-image'
+            />
+
+          </div>
+        </div>
       )}
     </div>
   );
