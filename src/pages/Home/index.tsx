@@ -11,11 +11,16 @@ import { useUIStore } from '../../modules/ui/ui.store';
 import { noteRepository, type SaveNoteParams } from '../../modules/notes/note.repository';
 import { useNoteStore } from '../../modules/notes/note.store';
 import type { Note } from '../../modules/notes/note.entity';
+import {
+  useDisplayPreferenceStore,
+  type SortKey,
+  type ThemeMode,
+} from '../../modules/ui/display-preference.store';
 
-type SortKey = 'newest' | 'oldest' | 'title';
-// 表示切り替えの state
-type ViewMode = 'grid' | 'list';
-type ThemeMode = 'light' | 'dark';
+// type SortKey = 'newest' | 'oldest' | 'title';
+// // 表示切り替えの state
+// type ViewMode = 'grid' | 'list';
+// type ThemeMode = 'light' | 'dark';
 
 
 export default function Home() {
@@ -43,6 +48,15 @@ export default function Home() {
   const [editingNote, setEditingNote] = useState<Note | null>(null); //型はNoteまたはnull。初期値はnull。
   const loadMoreRef = useRef<HTMLDivElement | null>(null); //無限スクロール関連。監視要素とそのrefを作成。
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null); //画像プレビュー用state
+
+  const {
+    viewMode,
+    setViewMode,
+    sortKey,
+    setSortKey,
+    theme,
+    setTheme,
+  } = useDisplayPreferenceStore();
 
   //コンポーネント表示時に一回だけ呼び出したいのでuseEffectの中で呼び出す
   useEffect(() => {
@@ -171,7 +185,7 @@ export default function Home() {
   if (!currentUser) return <Navigate to="/login" />; //ログインしていないとこのhome画面を見れないようにする。ログインしていないとlogin画面にリダイレクトさせる。
 
 
-  const [sortKey, setSortKey] = useState<SortKey>('newest');
+  // const [sortKey, setSortKey] = useState<SortKey>('newest');
   const sortedNotes = useMemo(() => {
     const copy = [...notes]; // 破壊的変更を避ける
 
@@ -189,10 +203,10 @@ export default function Home() {
 
 
   // 表示切り替えの state
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  // const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
   //ダークモード
-  const [theme, setTheme] = useState<ThemeMode>('light');
+  // const [theme, setTheme] = useState<ThemeMode>('light');
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') as ThemeMode | null;
