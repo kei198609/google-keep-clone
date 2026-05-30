@@ -16,6 +16,7 @@ import {
   type SortKey,
   type ThemeMode,
 } from '../../modules/ui/display-preference.store';
+import { useImagePreviewStore } from '../../modules/ui/image-preview.store';
 
 // type SortKey = 'newest' | 'oldest' | 'title';
 // // 表示切り替えの state
@@ -47,7 +48,12 @@ export default function Home() {
   const limit = 12;
   const [editingNote, setEditingNote] = useState<Note | null>(null); //型はNoteまたはnull。初期値はnull。
   const loadMoreRef = useRef<HTMLDivElement | null>(null); //無限スクロール関連。監視要素とそのrefを作成。
-  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null); //画像プレビュー用state
+  // const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null); //画像プレビュー用state
+
+  const {
+    previewImageUrl,
+    closePreview,
+  } = useImagePreviewStore();
 
   const {
     viewMode,
@@ -349,7 +355,7 @@ export default function Home() {
                 onEdit={handleCardClick}
                 onDelete={deleteNote}
                 viewMode={viewMode}
-                onPreviewImage={setPreviewImageUrl}
+                // onPreviewImage={setPreviewImageUrl}
                 /> //noteにmapの引数になっているnoteを渡すことでnotesに入っているメモの数だけmapが回って、NoteCardにそれぞれのメモの情報が渡されて表示されるようになる
               ))}
             </div>
@@ -387,7 +393,7 @@ export default function Home() {
       {previewImageUrl && (
         <div
           className='image-preview-overlay'
-          onClick={() => setPreviewImageUrl(null)} //背景をクリックするとsetPreviewImageUrl(null)が実行される。previewImageUrl が null になり、プレビューモーダルが閉じます。
+          onClick={closePreview}
         >
           <div
             className='image-preview-modal'
@@ -396,7 +402,7 @@ export default function Home() {
             <button
               type='button'
               className='image-preview-close'
-              onClick={() => setPreviewImageUrl(null)} //クリックすると、setPreviewImageUrl(null)が実行されます。つまり、画像プレビューを閉じます。
+              onClick={closePreview}
             >
               ×
             </button>
