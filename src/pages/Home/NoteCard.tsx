@@ -1,15 +1,18 @@
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import type { Note } from '../../modules/notes/note.entity';
+import { useImagePreviewStore } from '../../modules/ui/image-preview.store';
 
 interface NoteCardProps {
   note: Note;
   onEdit: (note: Note) => void;
   onDelete: (id: string) => void;
   viewMode: 'grid' | 'list';
-  onPreviewImage: (imageUrl: string) => void;
+  // onPreviewImage: (imageUrl: string) => void;
 }
 
-export default function NoteCard({ note, onEdit, onDelete, viewMode, onPreviewImage }: NoteCardProps) { // プロップスから受け取ってノートカードコンポーネントの中に伝えるようにする
+export default function NoteCard({ note, onEdit, onDelete, viewMode }: NoteCardProps) { // プロップスから受け取ってノートカードコンポーネントの中に伝えるようにする
+  const { openPreview } = useImagePreviewStore();
+
   const handleDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation(); //stopPropagationを呼ぶことで、ゴミ箱ボタンだけを押された処理だけを読んで、その後のイベントの処理を行える。ゴミ箱ボタンはノートカードに重なっているので、ノードカードをクリックした処理も一緒に走るのを防ぐ役割。
     onDelete(note.id);
@@ -24,7 +27,9 @@ export default function NoteCard({ note, onEdit, onDelete, viewMode, onPreviewIm
           className='note-card__image-container'
           onClick={(e) => {
             e.stopPropagation();
-            onPreviewImage(note.imageUrl!);
+            if(!note.imageUrl) return;
+            openPreview(note.imageUrl);
+            // onPreviewImage(note.imageUrl!);
           }}
         >
           <img
